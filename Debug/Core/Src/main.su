@@ -1,0 +1,13 @@
+../Core/Src/main.c:81:6:set_time	32	static
+../Core/Src/main.c:110:6:set_alarm	48	static
+../Core/Src/main.c:130:6:get_time	48	static
+../Core/Src/main.c:150:6:HAL_RTC_AlarmAEventCallback	16	static
+../Core/Src/main.c:154:6:to_do_on_alarm	8	static
+../Core/Src/main.c:168:9:day_function	8	static
+../Core/Src/main.c:213:5:main	16	static
+../Core/Src/main.c:317:6:SystemClock_Config	128	static
+../Core/Src/main.c:371:13:MX_ADC_Init	16	static
+../Core/Src/main.c:427:13:MX_I2C1_Init	8	static
+../Core/Src/main.c:475:13:MX_RTC_Init	72	static
+../Core/Src/main.c:558:13:MX_GPIO_Init	56	static
+../Core/Src/main.c:592:6:Error_Handler	8	static,ignoring_inline_asm
