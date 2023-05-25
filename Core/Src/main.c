@@ -25,6 +25,7 @@
 #include "ssd1306.h"
 #include "test.h"
 #include "battery.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,7 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define CENTER_Pin GPIO_PIN_13
+#define CENTER_GPIO_Port GPIOC
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,6 +65,13 @@ uint8_t today_7[10]="Sunday";
 uint8_t alarm=0;
 uint8_t adc_res=0;
 uint8_t adc_val=0;
+GPIO_PinState buttonState = GPIO_PIN_RESET;
+GPIO_PinState lastButtonState = GPIO_PIN_RESET;
+uint32_t buttonPressTime = 0;
+int flag = 0;
+uint8_t x=1;
+uint16_t sensor1_data, sensor2_data, sensor3_data,sensor4_data;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,8 +93,8 @@ void set_time(void)
 	RTC_DateTypeDef sDate = {0};
 
 	sTime.Hours = 0x10;
-	  sTime.Minutes = 0x20;
-	  sTime.Seconds = 0x30;
+	  sTime.Minutes = 0x35;
+	  sTime.Seconds = 0x40;
 	  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
 	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
@@ -204,6 +213,141 @@ uint8_t day_function(void)
 	    }
 	  return day;
 }
+
+void home_screen(void)
+{
+	/* USER CODE END WHILE */
+
+					  get_time();
+					  SSD1306_GotoXY (15, 25);
+					  SSD1306_Puts (time, &Font_11x18, 1);
+
+					  SSD1306_GotoXY (0, 0);
+					  SSD1306_Puts (date, &Font_7x10, 1);
+
+					  SSD1306_GotoXY (10, 10);
+					  SSD1306_Puts (day, &Font_7x10, 1);
+					  SSD1306_UpdateScreen(); //display
+					  SSD1306_DrawBitmap(100, 0, bat, 20, 12, 1);
+					  HAL_Delay (200);
+
+
+
+					 HAL_ADC_Start(&hadc);
+					if(  HAL_ADC_PollForConversion(&hadc, 100)==HAL_OK)
+					  {
+						  adc_res=HAL_ADC_GetValue(&hadc);
+						  adc_val=(adc_res*330)/1023;
+						  if(adc_res<=60&&adc_res>=20)
+						  {
+							  SSD1306_GotoXY (102,2);
+							  SSD1306_Puts ("25%", &Font_7x10, 0);
+							  SSD1306_UpdateScreen();
+						  }
+						  if(adc_res<=100&&adc_res>=60)
+						  {
+							  SSD1306_GotoXY (102,2);
+							  SSD1306_Puts ("50%", &Font_7x10, 0);
+							  SSD1306_UpdateScreen();
+						  }
+						  if(adc_res<=200&&adc_res>=100)
+						  {
+							  SSD1306_GotoXY (102,2);
+							  SSD1306_Puts ("75%", &Font_7x10, 0);
+							  SSD1306_UpdateScreen();
+						  }
+						 if(adc_res>=200)
+						  {
+							  SSD1306_GotoXY (102,2);
+							  SSD1306_Puts ("100%", &Font_7x10, 0);
+							  SSD1306_UpdateScreen();
+						  }
+					  }
+
+					  if(alarm)
+						{
+						  to_do_on_alarm();
+						  alarm=0;
+
+						}
+
+					 /* USER CODE BEGIN 3 */
+
+}
+
+
+void up_button(void)
+{
+	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET)
+						{
+						SSD1306_Clear ();
+						HAL_Delay (10);
+						int y=1;
+						while(y)
+						{
+									HAL_ADC_Start(&hadc);
+									HAL_ADC_PollForConversion(&hadc, 100);
+									sensor1_data = HAL_ADC_GetValue(&hadc);
+									sensor1_data=(((sensor1_data*330)/1023)-65580);
+									 char buffer[16];
+								//	 Display pressure value
+								//	SSD1306_Clear();
+									//HAL_Delay(100);
+									SSD1306_GotoXY(0, 0);
+									SSD1306_Puts("                            ", &Font_7x10, 1);
+									SSD1306_GotoXY(0, 2);
+									SSD1306_Puts(" TEMPERATURE            ", &Font_7x10, 1);
+									SSD1306_GotoXY(10, 30);
+									sprintf(buffer, "Temp now: %d'C", sensor1_data);
+									SSD1306_Puts(buffer, &Font_7x10, 1);
+									SSD1306_UpdateScreen();
+									HAL_Delay(2000);
+									HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,1); //LED ON
+
+									 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
+														{
+														 SSD1306_Clear();
+														 HAL_Delay(100);
+														 flag=0;
+														 x=0;
+														 y=0;
+														}
+						}
+						}
+		     else if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
+		     {
+		    	 SSD1306_Clear();
+				 HAL_Delay(100);
+				 flag=0;
+				 x=0;
+		     }
+}
+
+void settings(void)
+{
+	SSD1306_Clear ();
+	HAL_Delay (100);
+	while(x)
+	{
+	SSD1306_GotoXY (0,0);
+	SSD1306_Puts ("                            ", &Font_7x10, 0);
+	SSD1306_GotoXY (0,2);
+	SSD1306_Puts ("      SETTINGS            ", &Font_7x10, 0);
+	SSD1306_GotoXY (0,12);
+	SSD1306_Puts (" U-Pulse Rate        ", &Font_7x10, 0);
+	SSD1306_GotoXY (0,22);
+	SSD1306_Puts (" D-Temperature        ", &Font_7x10, 0);
+	SSD1306_GotoXY (0,32);
+	SSD1306_Puts (" L-Humidity           ", &Font_7x10, 0);
+	SSD1306_GotoXY (0,42);
+	SSD1306_Puts (" R-Pressure           ", &Font_7x10, 0);
+	SSD1306_UpdateScreen();
+	HAL_Delay (500);
+	up_button();
+	}
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -219,7 +363,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -245,69 +389,36 @@ int main(void)
     set_time();
     }
     set_alarm();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
+
+
+
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  /* USER CODE END WHILE */
-	  	 	 	  	  	  	  	  	  /* USER CODE END WHILE */
-	  	 	 	  	  	  	  	  	 	  get_time();
-	  	 	 	  	  	  	  	  	 	  SSD1306_GotoXY (15, 25);
-	  	 	 	  	  	  	  	  	 	  SSD1306_Puts (time, &Font_11x18, 1);
+	while (1)
+	{
 
-	  	 	 	  	  	  	  	  	 	  SSD1306_GotoXY (0, 0);
-	  	 	 	  	  	  	  	  	 	  SSD1306_Puts (date, &Font_7x10, 1);
+														    home_screen();
+														    buttonState = HAL_GPIO_ReadPin(CENTER_GPIO_Port, CENTER_Pin);
 
-	  	 	 	  	  	  	  	  	 	  SSD1306_GotoXY (10, 10);
-	  	 	 	  	  	  	  	  	 	  SSD1306_Puts (day, &Font_7x10, 1);
-	  	 	 	  	  	  	  	  	 	  SSD1306_UpdateScreen(); //display
-	  	 	 	  	  	  	  	  	 	  SSD1306_DrawBitmap(100, 0, bat, 20, 12, 1);
-	  	 	 	  	  	  	  	  	 	  HAL_Delay (200);
+														    if (buttonState != lastButtonState)
+														    {
+														        if (HAL_GetTick() - buttonPressTime >= 2000) // Button held down for 2 seconds
+														        {
+														            flag = 1;
+														        }
+														        lastButtonState = buttonState;
+														    }
 
+														    if (flag == 1 && buttonState == GPIO_PIN_RESET && HAL_GetTick() - buttonPressTime >= 2000)
+														    {
+														        settings();
+														    }
+		}
 
-
-	  	 	 	  	  	  	  	  	 	 HAL_ADC_Start(&hadc);
-	  	 	 	  	  	  	  	  	 	if(  HAL_ADC_PollForConversion(&hadc, 100)==HAL_OK)
-	  	 	 	  	  	  	  	  		  {
-	  	 	 	  	  	  	  	  			  adc_res=HAL_ADC_GetValue(&hadc);
-	  	 	 	  	  	  	  	  			  adc_val=(adc_res*330)/1023;
-	  	 	 	  	  	  	  	  			  if(adc_res<=60&&adc_res>=20)
-	  	 	 	  	  	  	  	  			  {
-	  	 	 	  	  	  	  	  				  SSD1306_GotoXY (102,2);
-	  	 	 	  	  	  	  	  				  SSD1306_Puts ("25%", &Font_7x10, 0);
-	  	 	 	  	  	  	  	  				  SSD1306_UpdateScreen();
-	  	 	 	  	  	  	  	  			  }
-	  	 	 	  	  	  	  	              if(adc_res<=100&&adc_res>=60)
-											  {
-												  SSD1306_GotoXY (102,2);
-												  SSD1306_Puts ("50%", &Font_7x10, 0);
-												  SSD1306_UpdateScreen();
-											  }
-	  	 	 	  	  	  	  	              if(adc_res<=200&&adc_res>=100)
-											  {
-												  SSD1306_GotoXY (102,2);
-												  SSD1306_Puts ("75%", &Font_7x10, 0);
-												  SSD1306_UpdateScreen();
-											  }
-	  	 	 	  	  	  	  	             if(adc_res>=200)
-											  {
-												  SSD1306_GotoXY (102,2);
-												  SSD1306_Puts ("100%", &Font_7x10, 0);
-												  SSD1306_UpdateScreen();
-											  }
-	  	 	 	  	  	  	  	  		  }
-
-	  	 						          if(alarm)
-	  	 									{
-	  	 									  to_do_on_alarm();
-	  	 									  alarm=0;
-	  	 									}
-	  	 	 	  	  	  	  	  	     /* USER CODE BEGIN 3 */
-	  	 	 	  	  	  	  	      /* USER CODE BEGIN 3 */
-	  	 	   }
-	  	 	   /* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
@@ -390,7 +501,7 @@ static void MX_ADC_Init(void)
   hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.ContinuousConvMode = DISABLE;
+  hadc.Init.ContinuousConvMode = ENABLE;
   hadc.Init.DiscontinuousConvMode = DISABLE;
   hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -407,8 +518,16 @@ static void MX_ADC_Init(void)
 
   /** Configure for the selected ADC regular channel to be converted.
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_10;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_11;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -570,12 +689,30 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 
+  /*Configure GPIO pins : CENTER_PIN_Pin PC3 */
+  GPIO_InitStruct.Pin = CENTER_PIN_Pin|GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LEFT_Pin PA3 DOWN_Pin */
+  GPIO_InitStruct.Pin = LEFT_Pin|GPIO_PIN_3|DOWN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PA5 */
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : UP_Pin */
+  GPIO_InitStruct.Pin = UP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(UP_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
