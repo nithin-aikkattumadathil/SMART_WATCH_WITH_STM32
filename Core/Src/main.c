@@ -303,7 +303,120 @@ void up_button(void)
 									SSD1306_UpdateScreen();
 									HAL_Delay(2000);
 									HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,1); //LED ON
+									HAL_Delay(80);
+									HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,0);
+															if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET)
+															{
+															SSD1306_Clear ();
+															HAL_Delay (10);
+															int y=1;
+															while(y)
+															{
+																		HAL_ADC_Start(&hadc);
+																		HAL_ADC_PollForConversion(&hadc, 100);
+																		sensor1_data = HAL_ADC_GetValue(&hadc);
+																		sensor1_data=(((sensor1_data*330)/1023)-65580);
+																		 char buffer[16];
+																	//	 Display pressure value
+																	//	SSD1306_Clear();
+																		//HAL_Delay(100);
+																		SSD1306_GotoXY(0, 0);
+																		SSD1306_Puts("                            ", &Font_7x10, 1);
+																		SSD1306_GotoXY(0, 2);
+																		SSD1306_Puts(" HUMIDITY            ", &Font_7x10, 1);
+																		SSD1306_GotoXY(10, 30);
+																		sprintf(buffer, "Humidity now: %d'", sensor1_data);
+																		SSD1306_Puts(buffer, &Font_7x10, 1);
+																		SSD1306_UpdateScreen();
+																		HAL_Delay(2000);
+																		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,1); //LED ON
+																		HAL_Delay(80);
+																		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,0);
+																																	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET)
+																																	{
+																																	SSD1306_Clear ();
+																																	HAL_Delay (10);
+																																	int y=1;
+																																	while(y)
+																																	{
+																																				HAL_ADC_Start(&hadc);
+																																				HAL_ADC_PollForConversion(&hadc, 100);
+																																				sensor1_data = HAL_ADC_GetValue(&hadc);
+																																				sensor1_data=(((sensor1_data*330)/1023)-65580);
+																																				 char buffer[16];
+																																			//	 Display pressure value
+																																			//	SSD1306_Clear();
+																																				//HAL_Delay(100);
+																																				SSD1306_GotoXY(0, 0);
+																																				SSD1306_Puts("                            ", &Font_7x10, 1);
+																																				SSD1306_GotoXY(0, 2);
+																																				SSD1306_Puts(" PULSE RATE            ", &Font_7x10, 1);
+																																				SSD1306_GotoXY(10, 30);
+																																				sprintf(buffer, "Pulse Rate now: %d'", sensor1_data);
+																																				SSD1306_Puts(buffer, &Font_7x10, 1);
+																																				SSD1306_UpdateScreen();
+																																				HAL_Delay(2000);
+																																				HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,1); //LED ON
+																																				HAL_Delay(80);
+																																				HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,0);
+																																				                                                           if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET)
+																																																			{
+																																																			SSD1306_Clear ();
+																																																			HAL_Delay (10);
+																																																			int y=1;
+																																																			while(y)
+																																																			{
+																																																						HAL_ADC_Start(&hadc);
+																																																						HAL_ADC_PollForConversion(&hadc, 100);
+																																																						sensor1_data = HAL_ADC_GetValue(&hadc);
+																																																						sensor1_data=(((sensor1_data*330)/1023)-65580);
+																																																						 char buffer[16];
+																																																					//	 Display pressure value
+																																																					//	SSD1306_Clear();
+																																																						//HAL_Delay(100);
+																																																						SSD1306_GotoXY(0, 0);
+																																																						SSD1306_Puts("                            ", &Font_7x10, 1);
+																																																						SSD1306_GotoXY(0, 2);
+																																																						SSD1306_Puts(" PRESSURE           ", &Font_7x10, 1);
+																																																						SSD1306_GotoXY(10, 30);
+																																																						sprintf(buffer, "Pressure now: %d'", sensor1_data);
+																																																						SSD1306_Puts(buffer, &Font_7x10, 1);
+																																																						SSD1306_UpdateScreen();
+																																																						HAL_Delay(2000);
+																																																						HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,1); //LED ON
+																																																						HAL_Delay(80);
+																																																						HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,0);
 
+																																																						 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
+																																																											{
+																																																											 SSD1306_Clear();
+																																																											 HAL_Delay(100);
+																																																											 flag=0;
+																																																											 x=0;
+																																																											 y=0;
+																																																											}
+																																																			}
+																																																			}
+																																				 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
+																																									{
+																																									 SSD1306_Clear();
+																																									 HAL_Delay(100);
+																																									 flag=0;
+																																									 x=0;
+																																									 y=0;
+																																									}
+																																	}
+																																	}
+																		 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
+																							{
+																							 SSD1306_Clear();
+																							 HAL_Delay(100);
+																							 flag=0;
+																							 x=0;
+																							 y=0;
+																							}
+															}
+															}
 									 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
 														{
 														 SSD1306_Clear();
@@ -314,13 +427,6 @@ void up_button(void)
 														}
 						}
 						}
-		     else if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
-		     {
-		    	 SSD1306_Clear();
-				 HAL_Delay(100);
-				 flag=0;
-				 x=0;
-		     }
 }
 
 void settings(void)
